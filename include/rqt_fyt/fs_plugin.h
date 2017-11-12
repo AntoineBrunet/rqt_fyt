@@ -6,6 +6,7 @@
 #include <rqt_fyt/ui_ifx.h>
 #include <QWidget>
 #include "cmg_msgs/State.h"
+#include "cmg_msgs/Signal.h"
 
 namespace rqt_fyt
 {
@@ -31,10 +32,18 @@ namespace rqt_fyt
 			QWidget* widget_;
 			ros::NodeHandle node;
 			ros::Subscriber sub_state;
+			ros::Publisher pub_sig;
 			void state_callback(const cmg_msgs::State::ConstPtr & msg);
+
+		private	Q_SLOTS:
+			void triggerAlarm(bool checked);
+			void triggerStart(bool checked);
+			void triggerEnd(bool checked);
+			void triggerGood(bool checked);
 
 		Q_SIGNALS:
 			void setStateText(const QString str);
+			void setStateStyle(const QString str);
 
 	};
 }  // namespace rqt_example_cpp

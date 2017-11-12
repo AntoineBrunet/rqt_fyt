@@ -27,9 +27,17 @@ namespace rqt_fyt
 		// add widget to the user interface
 		context.addWidget(widget_);
 
-		sub_state = node.subscribe("/state", 1, &FSPlugin::state_callback, this);
+		sub_state = node.subscribe("/mae/state", 1, &FSPlugin::state_callback, this);
+		pub_sig = node.advertise<cmg_msgs::Signal>("/mae/signal",1);
+
 		QObject::connect(this, SIGNAL(setStateText(const QString)),
-			ui_.state, SLOT(setText(const QString))	);
+				ui_.state, SLOT(setText(const QString))	);
+		QObject::connect( this, SIGNAL(setStateStyle(const QString)),
+				ui_.state, SLOT(setStyleSheet(const QString)) );
+		QObject::connect(ui_.alarmButton, SIGNAL(clicked(bool)), this, SLOT(triggerAlarm(bool)));
+		QObject::connect(ui_.startButton, SIGNAL(clicked(bool)), this, SLOT(triggerStart(bool)));
+		QObject::connect(ui_.endButton, SIGNAL(clicked(bool)), this, SLOT(triggerEnd(bool)));
+		QObject::connect(ui_.goodButton, SIGNAL(clicked(bool)), this, SLOT(triggerGood(bool)));
 
 	}
 
@@ -54,17 +62,42 @@ namespace rqt_fyt
 		switch (msg->state) {
 			case STATE_SAFE:
 				emit setStateText("SAFE");
+				emit setStateStyle("background-color: red;");
 				break;
 			case STATE_READY:
 				emit setStateText("READY");
+				emit setStateStyle("background-color: green;");
 				break;
 			case STATE_MISS:
 				emit setStateText("RUNNING");
+				emit setStateStyle("background-color: blue; color: white;");
 				break;
 			case STATE_POST:
 				emit setStateText("DONE");
+				emit setStateStyle("background-color: pink;");
 				break;
 		}
+	}
+
+	void FSPlugin::triggerAlarm(bool checked) {
+		cmg_msgs::Signal s;
+		s.signal = SIG_ALARM;
+		pub_sig.publish(s);
+	}
+	void FSPlugin::triggerStart(bool checked) {
+		cmg_msgs::Signal s;
+		s.signal = SIG_START;
+		pub_sig.publish(s);
+	}
+	void FSPlugin::triggerEnd(bool checked) {
+		cmg_msgs::Signal s;
+		s.signal = SIG_END;
+		pub_sig.publish(s);
+	}
+	void FSPlugin::triggerGood(bool checked) {
+		cmg_msgs::Signal s;
+		s.signal = SIG_GOOD;
+		pub_sig.publish(s);
 	}
 
 	/*bool hasConfiguration() const
