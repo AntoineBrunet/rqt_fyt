@@ -1,0 +1,20 @@
+<library path="lib/librqt_fyt">
+  <class name="rqt_fyt/FSPlugin" type="rqt_fyt::FSPlugin" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+		FYT 2017 Flying Squirrels experiment IFX
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>Flying Squirrels FYT2017</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Great user interface to provide real value.</statustip>
+    </qtgui>
+  </class>
+</library>
