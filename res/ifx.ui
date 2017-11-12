@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>FSIfx</class>
  <widget class="QWidget" name="FSIfx">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,6 +15,9 @@
   </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton:disabled {background-color:#333333;}</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -180,8 +186,11 @@
         </item>
         <item>
          <widget class="QProgressBar" name="progressBar">
+          <property name="maximum">
+           <number>10</number>
+          </property>
           <property name="value">
-           <number>24</number>
+           <number>1</number>
           </property>
          </widget>
         </item>
@@ -257,6 +266,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="goodButton">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -271,7 +283,7 @@
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color:green;color:white</string>
+        <string notr="true">QPushButton:enabled {background-color:green;color:white;}</string>
        </property>
        <property name="text">
         <string>Get Ready</string>
@@ -280,6 +292,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="startButton">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -293,11 +308,17 @@
          <bold>true</bold>
         </font>
        </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
        <property name="styleSheet">
-        <string notr="true">background-color:blue; color:white</string>
+        <string notr="true">QPushButton:enabled {background-color:blue;color:white;}</string>
        </property>
        <property name="text">
         <string>Start Maneuver</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -317,7 +338,7 @@
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color:purple; color:white</string>
+        <string notr="true">QPushButton:enabled {background-color:purple;color:white;}</string>
        </property>
        <property name="text">
         <string>End Maneuver</string>

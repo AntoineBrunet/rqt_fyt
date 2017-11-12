@@ -1,0 +1,6 @@
+<launch>
+  <node name="mae" pkg="fyt_mae" type="node" output="screen" />
+  <node name="gestion_parabole" pkg="gestion_parabole" type="node" output="screen">
+  	<param name="parabola_list" value="$(find gestion_parabole)/samples/flight1.json" />
+  </node>
+</launch>
