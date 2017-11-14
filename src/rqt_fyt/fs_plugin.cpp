@@ -170,7 +170,21 @@ namespace rqt_fyt
 
 	void FSPlugin::guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg){
 		static const QString tnames[3] = {"Normal", "Tracking", "STOP"};
-		QString info = QString("New %1 segment maneuver.").arg(tnames[msg->type]);
+		QString info = QString("New %1 segment maneuver. A=[%2,%3,%4] B=[%5,%6,%7] KP=[%8,%9,%10] KV=[%11,%12,%13]")
+			.arg(tnames[msg->type])
+			.arg(msg->a[0])
+			.arg(msg->a[1])
+			.arg(msg->a[2])
+			.arg(msg->b[0])
+			.arg(msg->b[1])
+			.arg(msg->b[2])
+			.arg(msg->kp[0])
+			.arg(msg->kp[1])
+			.arg(msg->kp[2])
+			.arg(msg->kv[0])
+			.arg(msg->kv[1])
+			.arg(msg->kv[2])
+			;
 		emit logManeuver(info);
 	}
 	void FSPlugin::fwcmd_callback(const cmg_msgs::SpeedList::ConstPtr & msg){
