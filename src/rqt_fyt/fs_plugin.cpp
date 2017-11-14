@@ -95,6 +95,8 @@ namespace rqt_fyt
 		QObject::connect( this, SIGNAL(logStatus(const QString)),
 				ui_.status, SLOT(append(const QString)) );
 
+		QObject::connect( this, SIGNAL(setCurrentPara(QString)),
+				ui_.pbId, SLOT(setText(QString)) );
 
 
 		ros::ServiceClient checkstate_client = node.serviceClient<fyt_mae::CheckState>("/mae/check_state");
@@ -133,31 +135,31 @@ namespace rqt_fyt
 				emit setStateStyle("background-color: red;");
 				set_agstates(std::vector<bool>({false,false,false,false,false,false}));
 				emit stopTimer();
-				setGoodDisabled(false);
-				setStartDisabled(true);
-				setEndDisabled(true);
+				emit setGoodDisabled(false);
+				emit setStartDisabled(true);
+				emit setEndDisabled(true);
 				break;
 			case STATE_READY:
 				emit setStateText("READY");
 				emit setStateStyle("background-color: green;");
-				setGoodDisabled(true);
+				emit setGoodDisabled(true);
 				setEndDisabled(true);
 				break;
 			case STATE_MISS:
 				emit setStateText("RUNNING");
 				emit setStateStyle("background-color: blue; color: white;");
 				emit startTimer();
-				setGoodDisabled(true);
-				setStartDisabled(true);
-				setEndDisabled(false);
+				emit setGoodDisabled(true);
+				emit setStartDisabled(true);
+				emit setEndDisabled(false);
 				break;
 			case STATE_POST:
 				emit setProgressValue(100);
 				emit setStateText("DONE");
 				emit setStateStyle("background-color: pink;");
-				setEndDisabled(true);
-				setStartDisabled(true);
-				setGoodDisabled(false);
+				emit setEndDisabled(true);
+				emit setStartDisabled(true);
+				emit setGoodDisabled(false);
 				emit stopTimer();
 				break;
 		}
@@ -179,7 +181,8 @@ namespace rqt_fyt
 		tpara = msg->tpara;
 		emit setProgressValue(0);
 		set_agstates(msg->running);
-		setStartDisabled(false);
+		emit setCurrentPara(QString("%1").arg(msg->id_para));
+		emit setStartDisabled(false);
 	}
 
 	void FSPlugin::guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg){

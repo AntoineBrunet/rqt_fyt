@@ -86,6 +86,8 @@ namespace rqt_fyt
 			void setGimbalAngle4(int value);
 			void setGimbalAngle5(int value);
 			void setGimbalAngle6(int value);
+
+			void setCurrentPara(QString value);
 	};
 }  // namespace rqt_example_cpp
 #endif  // RQT_FYT_FS_PLUGIN_H
