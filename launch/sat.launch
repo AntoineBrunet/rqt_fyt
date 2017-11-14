@@ -5,6 +5,9 @@
   </node>
   
   <node name="gestion_gimbal" pkg="boucle_commande" type="Gestion_gimbal" output="screen" />
+  <node name="filtre_imu" pkg="boucle_commande" type="Filtre_IMU_simplifie" output="screen"></node> 
+  <node name="pilotage" pkg="boucle_commande" type="LoiPilotage" output="screen"></node> 
+  <node name="guidage" pkg="boucle_commande" type="guidage_integre" output="screen"></node> 
   
   <node name="gimbal_driver" pkg="gimbal_driver" type="node" output="screen" >
 	<rosparam param="gimbal_ids">[101,102,103,104,105]</rosparam>
