@@ -3,6 +3,9 @@
   <node name="gestion_parabole" pkg="gestion_parabole" type="node" output="screen">
   	<param name="parabola_list" value="$(find gestion_parabole)/samples/flight1.json" />
   </node>
+  
+  <node name="gestion_gimbal" pkg="boucle_commande" type="Gestion_gimbal" output="screen" />
+  
   <node name="gimbal_driver" pkg="gimbal_driver" type="node" output="screen" >
 	<rosparam param="gimbal_ids">[101,102,103,104,105]</rosparam>
 	<rosparam param="gimbal_dev">/dev/ttyUSB0</rosparam>

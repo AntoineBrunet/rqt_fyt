@@ -32,6 +32,7 @@ namespace rqt_fyt
 		sub_agcfg = node.subscribe("/parabola/agconfig", 1, &FSPlugin::agcfg_callback, this);
 		sub_guidg = node.subscribe("/parabola/guidage", 5, &FSPlugin::guidg_callback, this);
 		sub_fwcmd = node.subscribe("/fw/cmd", 5, &FSPlugin::fwcmd_callback, this);
+		sub_gimst = node.subscribe("/gimbal/state", 1, &FSPlugin::gimst_callback, this);
 		pub_sig = node.advertise<cmg_msgs::Signal>("/mae/signal",1);
 	
 		tpara = 12;
@@ -64,6 +65,19 @@ namespace rqt_fyt
 				ui_.ag5, SLOT(setStyleSheet(const QString)) );
 		QObject::connect( this, SIGNAL(setAG6Style(const QString)),
 				ui_.ag6, SLOT(setStyleSheet(const QString)) );
+
+		QObject::connect( this, SIGNAL(setGimbalAngle1(int)),
+				ui_.pos1, SLOT(setValue(int)) );
+		QObject::connect( this, SIGNAL(setGimbalAngle2(int)),
+				ui_.pos2, SLOT(setValue(int)) );
+		QObject::connect( this, SIGNAL(setGimbalAngle3(int)),
+				ui_.pos3, SLOT(setValue(int)) );
+		QObject::connect( this, SIGNAL(setGimbalAngle4(int)),
+				ui_.pos4, SLOT(setValue(int)) );
+		QObject::connect( this, SIGNAL(setGimbalAngle5(int)),
+				ui_.pos5, SLOT(setValue(int)) );
+		QObject::connect( this, SIGNAL(setGimbalAngle6(int)),
+				ui_.pos6, SLOT(setValue(int)) );
 
 		QObject::connect( this, SIGNAL(setStartDisabled(bool)),
 				ui_.startButton, SLOT(setDisabled(bool)) );
@@ -196,6 +210,14 @@ namespace rqt_fyt
 			.arg(msg->speeds[4].speed)
 			.arg(msg->speeds[5].speed);
 		emit logStatus(info);
+	}
+	void FSPlugin::gimst_callback(const dynamixel_workbench_msgs::DynamixelStateList::ConstPtr &msg){
+		emit setGimbalAngle1(msg->dynamixel_state[0].present_position);
+		emit setGimbalAngle2(msg->dynamixel_state[1].present_position);
+		emit setGimbalAngle3(msg->dynamixel_state[2].present_position);
+		emit setGimbalAngle4(msg->dynamixel_state[3].present_position);
+		emit setGimbalAngle5(msg->dynamixel_state[4].present_position);
+		emit setGimbalAngle6(msg->dynamixel_state[5].present_position);
 	}
 
 	void FSPlugin::triggerAlarm(bool checked) {

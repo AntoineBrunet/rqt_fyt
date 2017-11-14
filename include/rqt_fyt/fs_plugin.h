@@ -11,6 +11,7 @@
 #include "cmg_msgs/Signal.h"
 #include "cmg_msgs/Guidage.h"
 #include "cmg_msgs/AGConfig.h"
+#include "dynamixel_workbench_msgs/DynamixelStateList.h"
 
 namespace rqt_fyt
 {
@@ -41,11 +42,13 @@ namespace rqt_fyt
 			ros::Subscriber sub_agcfg;
 			ros::Subscriber sub_guidg;
 			ros::Subscriber sub_fwcmd;
+			ros::Subscriber sub_gimst;
 			ros::Publisher pub_sig;
 			void state_callback(const cmg_msgs::State & msg);
 			void agcfg_callback(const cmg_msgs::AGConfig::ConstPtr & msg);
 			void guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg);
 			void fwcmd_callback(const cmg_msgs::SpeedList::ConstPtr & msg);
+			void gimst_callback(const dynamixel_workbench_msgs::DynamixelStateList::ConstPtr &msg);
 			template <typename T> void set_agstates(const T& states);
 
 		private	Q_SLOTS:
@@ -76,6 +79,13 @@ namespace rqt_fyt
 
 			void logManeuver(const QString str);
 			void logStatus(const QString str);
+
+			void setGimbalAngle1(int value);
+			void setGimbalAngle2(int value);
+			void setGimbalAngle3(int value);
+			void setGimbalAngle4(int value);
+			void setGimbalAngle5(int value);
+			void setGimbalAngle6(int value);
 	};
 }  // namespace rqt_example_cpp
 #endif  // RQT_FYT_FS_PLUGIN_H
