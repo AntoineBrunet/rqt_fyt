@@ -10,4 +10,15 @@
 	<rosparam param="gimbal_protocol_version">2.0</rosparam>
 	<rosparam param="gimbal_pub_freq">10</rosparam>
   </node>
+  <node name="flywheel_driver" pkg="flywheel_driver" type="node" output="screen">
+    <param name="flywheel_min_speed" value="5000" />
+    <param name="flywheel_max_speed" value="14000" />
+    <param name="flywheel_calibrated_speed" value="6000" />
+    <param name="flywheel_zero_signal" value="205" />
+    <param name="flywheel_init_signal" value="210" />
+    <param name="flywheel_init_time" value="0.5" />
+	<rosparam param="flywheel_ids">[0,1,2,3,12,13]</rosparam>
+	<rosparam param="flywheel_calibrations">[312,313,312,312,311,312]</rosparam>
+    <param name="pwm_freq" value="50" />
+  </node> 
 </launch>
