@@ -6,8 +6,10 @@
 #include <rqt_fyt/ui_ifx.h>
 #include <QWidget>
 #include <QTimer>
+#include "cmg_msgs/SpeedList.h"
 #include "cmg_msgs/State.h"
 #include "cmg_msgs/Signal.h"
+#include "cmg_msgs/Guidage.h"
 #include "cmg_msgs/AGConfig.h"
 
 namespace rqt_fyt
@@ -37,9 +39,13 @@ namespace rqt_fyt
 			ros::NodeHandle node;
 			ros::Subscriber sub_state;
 			ros::Subscriber sub_agcfg;
+			ros::Subscriber sub_guidg;
+			ros::Subscriber sub_fwcmd;
 			ros::Publisher pub_sig;
-			void state_callback(const cmg_msgs::State::ConstPtr & msg);
+			void state_callback(const cmg_msgs::State & msg);
 			void agcfg_callback(const cmg_msgs::AGConfig::ConstPtr & msg);
+			void guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg);
+			void fwcmd_callback(const cmg_msgs::SpeedList::ConstPtr & msg);
 			template <typename T> void set_agstates(const T& states);
 
 		private	Q_SLOTS:
@@ -64,7 +70,12 @@ namespace rqt_fyt
 			void setEndDisabled(bool disable);
 			void setGoodDisabled(bool disable);
 
+			void stopTimer();
+			void startTimer();
 			void setProgressValue(int v);
+
+			void logManeuver(const QString str);
+			void logStatus(const QString str);
 	};
 }  // namespace rqt_example_cpp
 #endif  // RQT_FYT_FS_PLUGIN_H

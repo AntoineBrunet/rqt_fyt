@@ -2,6 +2,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <QStringList>
 #include "fyt_mae/fyt_commons.h"
+#include "fyt_mae/CheckState.h"
 
 namespace rqt_fyt
 {
@@ -29,14 +30,22 @@ namespace rqt_fyt
 
 		sub_state = node.subscribe("/mae/state", 1, &FSPlugin::state_callback, this);
 		sub_agcfg = node.subscribe("/parabola/agconfig", 1, &FSPlugin::agcfg_callback, this);
+		sub_guidg = node.subscribe("/parabola/guidage", 5, &FSPlugin::guidg_callback, this);
+		sub_fwcmd = node.subscribe("/fw/cmd", 5, &FSPlugin::fwcmd_callback, this);
 		pub_sig = node.advertise<cmg_msgs::Signal>("/mae/signal",1);
-
+	
 		tpara = 12;
 		parabola_timer = new QTimer(this);
 		parabola_timer->setInterval(1000);
 		QObject::connect(parabola_timer, SIGNAL(timeout()), this, SLOT(incrProgress()));
+		QObject::connect( this, SIGNAL(stopTimer()),
+				parabola_timer, SLOT(stop()) );
+		QObject::connect( this, SIGNAL(startTimer()),
+				parabola_timer, SLOT(start()) );
 		QObject::connect( this, SIGNAL(setProgressValue(int)),
 				ui_.progressBar, SLOT(setValue(int)) );
+		ui_.progressBar->setMaximum(100);
+		emit setProgressValue(0);
 		
 
 		QObject::connect(this, SIGNAL(setStateText(const QString)),
@@ -67,6 +76,23 @@ namespace rqt_fyt
 		QObject::connect(ui_.endButton, SIGNAL(clicked(bool)), this, SLOT(triggerEnd(bool)));
 		QObject::connect(ui_.goodButton, SIGNAL(clicked(bool)), this, SLOT(triggerGood(bool)));
 
+		QObject::connect( this, SIGNAL(logManeuver(const QString)),
+				ui_.pbDesc, SLOT(append(const QString)) );
+		QObject::connect( this, SIGNAL(logStatus(const QString)),
+				ui_.status, SLOT(append(const QString)) );
+
+
+
+		ros::ServiceClient checkstate_client = node.serviceClient<fyt_mae::CheckState>("/mae/check_state");
+		fyt_mae::CheckState state_msg;
+		if (checkstate_client.call(state_msg)) {
+			cmg_msgs::State s;
+			s.state = state_msg.response.state;
+			state_callback(s);
+		} else {
+			ROS_WARN("Could not get current state info...");
+		}
+
 	}
 
 	void FSPlugin::shutdownPlugin()
@@ -86,13 +112,13 @@ namespace rqt_fyt
 		// v = instance_settings.value(k)
 	}
 
-	void FSPlugin::state_callback(const cmg_msgs::State::ConstPtr & msg) {
-		switch (msg->state) {
+	void FSPlugin::state_callback(const cmg_msgs::State & msg) {
+		switch (msg.state) {
 			case STATE_SAFE:
 				emit setStateText("SAFE");
 				emit setStateStyle("background-color: red;");
 				set_agstates(std::vector<bool>({false,false,false,false,false,false}));
-				parabola_timer->stop();
+				emit stopTimer();
 				setGoodDisabled(false);
 				setStartDisabled(true);
 				setEndDisabled(true);
@@ -101,20 +127,24 @@ namespace rqt_fyt
 				emit setStateText("READY");
 				emit setStateStyle("background-color: green;");
 				setGoodDisabled(true);
+				setEndDisabled(true);
 				break;
 			case STATE_MISS:
 				emit setStateText("RUNNING");
 				emit setStateStyle("background-color: blue; color: white;");
-				parabola_timer->start();
+				emit startTimer();
+				setGoodDisabled(true);
 				setStartDisabled(true);
 				setEndDisabled(false);
 				break;
 			case STATE_POST:
+				emit setProgressValue(100);
 				emit setStateText("DONE");
 				emit setStateStyle("background-color: pink;");
 				setEndDisabled(true);
+				setStartDisabled(true);
 				setGoodDisabled(false);
-				parabola_timer->stop();
+				emit stopTimer();
 				break;
 		}
 	}
@@ -136,6 +166,22 @@ namespace rqt_fyt
 		emit setProgressValue(0);
 		set_agstates(msg->running);
 		setStartDisabled(false);
+	}
+
+	void FSPlugin::guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg){
+		static const QString tnames[3] = {"Normal", "Tracking", "STOP"};
+		QString info = QString("New %1 segment maneuver.").arg(tnames[msg->type]);
+		emit logManeuver(info);
+	}
+	void FSPlugin::fwcmd_callback(const cmg_msgs::SpeedList::ConstPtr & msg){
+		QString info = QString("New requested flywheel speeds: [%1,%2,%3,%4,%5,%6]")
+			.arg(msg->speeds[0].speed)
+			.arg(msg->speeds[1].speed)
+			.arg(msg->speeds[2].speed)
+			.arg(msg->speeds[3].speed)
+			.arg(msg->speeds[4].speed)
+			.arg(msg->speeds[5].speed);
+		emit logStatus(info);
 	}
 
 	void FSPlugin::triggerAlarm(bool checked) {
@@ -163,6 +209,7 @@ namespace rqt_fyt
 		int value = ui_.progressBar->value() + 100/tpara;
 		if (value > 100) { 
 			value = 100; 
+			emit setProgressValue(value);
 			parabola_timer->stop();
 		}
 		emit setProgressValue(value);
