@@ -37,6 +37,7 @@ namespace rqt_fyt
 			QWidget* widget_;
 			QTimer* parabola_timer;
 			unsigned int tpara;
+			bool turning;
 			ros::NodeHandle node;
 			ros::Subscriber sub_state;
 			ros::Subscriber sub_agcfg;
@@ -44,6 +45,9 @@ namespace rqt_fyt
 			ros::Subscriber sub_fwcmd;
 			ros::Subscriber sub_gimst;
 			ros::Publisher pub_sig;
+			ros::Publisher pub_gim;
+			ros::ServiceClient setid_client;
+			ros::ServiceClient calib_client;
 			void state_callback(const cmg_msgs::State & msg);
 			void agcfg_callback(const cmg_msgs::AGConfig::ConstPtr & msg);
 			void guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg);
@@ -56,7 +60,10 @@ namespace rqt_fyt
 			void triggerStart(bool checked);
 			void triggerEnd(bool checked);
 			void triggerGood(bool checked);
+			void selectedId();
 			void incrProgress();
+			void calibrateImu(bool checked);
+			void testGimbals(bool checked);
 
 		Q_SIGNALS:
 			void setStateText(const QString str);
@@ -72,6 +79,7 @@ namespace rqt_fyt
 			void setStartDisabled(bool disable);
 			void setEndDisabled(bool disable);
 			void setGoodDisabled(bool disable);
+			void setIdDisabled(bool disable);
 
 			void stopTimer();
 			void startTimer();
@@ -87,7 +95,7 @@ namespace rqt_fyt
 			void setGimbalAngle5(int value);
 			void setGimbalAngle6(int value);
 
-			void setCurrentPara(QString value);
+			void setCurrentPara(int value);
 	};
 }  // namespace rqt_example_cpp
 #endif  // RQT_FYT_FS_PLUGIN_H

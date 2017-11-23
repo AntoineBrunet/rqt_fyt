@@ -3,6 +3,9 @@
 #include <QStringList>
 #include "fyt_mae/fyt_commons.h"
 #include "fyt_mae/CheckState.h"
+#include "gestion_parabole/SetId.h"
+#include "cmg_msgs/GimbalTarget.h"
+#include "std_srvs/Empty.h"
 
 namespace rqt_fyt
 {
@@ -34,6 +37,8 @@ namespace rqt_fyt
 		sub_fwcmd = node.subscribe("/fw/cmd", 5, &FSPlugin::fwcmd_callback, this);
 		sub_gimst = node.subscribe("/gimbal/state", 1, &FSPlugin::gimst_callback, this);
 		pub_sig = node.advertise<cmg_msgs::Signal>("/mae/signal",1);
+		pub_gim = node.advertise<cmg_msgs::GimbalTarget>("/gimbal/cmd",1);
+		turning = false;
 	
 		tpara = 12;
 		parabola_timer = new QTimer(this);
@@ -89,15 +94,24 @@ namespace rqt_fyt
 		QObject::connect(ui_.startButton, SIGNAL(clicked(bool)), this, SLOT(triggerStart(bool)));
 		QObject::connect(ui_.endButton, SIGNAL(clicked(bool)), this, SLOT(triggerEnd(bool)));
 		QObject::connect(ui_.goodButton, SIGNAL(clicked(bool)), this, SLOT(triggerGood(bool)));
+		
+		QObject::connect( this, SIGNAL(setIdDisabled(bool)),
+				ui_.pbId, SLOT(setDisabled(bool)) );
+		QObject::connect(ui_.pbId, SIGNAL(editingFinished()), this, SLOT(selectedId()));
 
 		QObject::connect( this, SIGNAL(logManeuver(const QString)),
 				ui_.pbDesc, SLOT(append(const QString)) );
 		QObject::connect( this, SIGNAL(logStatus(const QString)),
 				ui_.status, SLOT(append(const QString)) );
 
-		QObject::connect( this, SIGNAL(setCurrentPara(QString)),
-				ui_.pbId, SLOT(setText(QString)) );
+		QObject::connect( this, SIGNAL(setCurrentPara(int)),
+				ui_.pbId, SLOT(setValue(int)) );
 
+		setid_client = node.serviceClient<gestion_parabole::SetId>("/parabola/set_id");
+		calib_client = node.serviceClient<std_srvs::Empty>("/imu/calibrate");
+		
+		QObject::connect(ui_.testgimbals, SIGNAL(clicked(bool)), this, SLOT(testGimbals(bool)));
+		QObject::connect(ui_.calibrateimu, SIGNAL(clicked(bool)), this, SLOT(calibrateImu(bool)));
 
 		ros::ServiceClient checkstate_client = node.serviceClient<fyt_mae::CheckState>("/mae/check_state");
 		fyt_mae::CheckState state_msg;
@@ -138,12 +152,15 @@ namespace rqt_fyt
 				emit setGoodDisabled(false);
 				emit setStartDisabled(true);
 				emit setEndDisabled(true);
+				emit setIdDisabled(true);
+				turning = false;
 				break;
 			case STATE_READY:
 				emit setStateText("READY");
 				emit setStateStyle("background-color: green;");
 				emit setGoodDisabled(true);
-				setEndDisabled(true);
+				emit setEndDisabled(true);
+				emit setIdDisabled(true);
 				break;
 			case STATE_MISS:
 				emit setStateText("RUNNING");
@@ -152,6 +169,7 @@ namespace rqt_fyt
 				emit setGoodDisabled(true);
 				emit setStartDisabled(true);
 				emit setEndDisabled(false);
+				emit setIdDisabled(true);
 				break;
 			case STATE_POST:
 				emit setProgressValue(100);
@@ -160,6 +178,7 @@ namespace rqt_fyt
 				emit setEndDisabled(true);
 				emit setStartDisabled(true);
 				emit setGoodDisabled(false);
+				emit setIdDisabled(true);
 				emit stopTimer();
 				break;
 		}
@@ -181,8 +200,9 @@ namespace rqt_fyt
 		tpara = msg->tpara;
 		emit setProgressValue(0);
 		set_agstates(msg->running);
-		emit setCurrentPara(QString("%1").arg(msg->id_para));
+		emit setCurrentPara(msg->id_para);
 		emit setStartDisabled(false);
+		emit setIdDisabled(false);
 	}
 
 	void FSPlugin::guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg){
@@ -215,12 +235,13 @@ namespace rqt_fyt
 		emit logStatus(info);
 	}
 	void FSPlugin::gimst_callback(const dynamixel_workbench_msgs::DynamixelStateList::ConstPtr &msg){
-		emit setGimbalAngle1(msg->dynamixel_state[0].present_position);
-		emit setGimbalAngle2(msg->dynamixel_state[1].present_position);
-		emit setGimbalAngle3(msg->dynamixel_state[2].present_position);
-		emit setGimbalAngle4(msg->dynamixel_state[3].present_position);
-		emit setGimbalAngle5(msg->dynamixel_state[4].present_position);
-		emit setGimbalAngle6(msg->dynamixel_state[5].present_position);
+		const double DEG_PER_RAD = 180./3.1415;
+		emit setGimbalAngle1(msg->dynamixel_state[0].present_position * DEG_PER_RAD);
+		emit setGimbalAngle2(msg->dynamixel_state[1].present_position * DEG_PER_RAD);
+		emit setGimbalAngle3(msg->dynamixel_state[2].present_position * DEG_PER_RAD);
+		emit setGimbalAngle4(msg->dynamixel_state[3].present_position * DEG_PER_RAD);
+		emit setGimbalAngle5(msg->dynamixel_state[4].present_position * DEG_PER_RAD);
+		emit setGimbalAngle6(msg->dynamixel_state[5].present_position * DEG_PER_RAD);
 	}
 
 	void FSPlugin::triggerAlarm(bool checked) {
@@ -242,6 +263,32 @@ namespace rqt_fyt
 		cmg_msgs::Signal s;
 		s.signal = SIG_GOOD;
 		pub_sig.publish(s);
+	}
+	
+	void FSPlugin::calibrateImu(bool checked) {
+		std_srvs::Empty msg;
+		calib_client.call(msg);
+	}
+	
+	void FSPlugin::testGimbals(bool checked) {
+		cmg_msgs::GimbalTarget msg;
+		msg.mode = 1;
+		for (int i = 0; i < 6; i++) {
+			msg.positions.push_back(turning?0.:1.);	
+		}
+		pub_gim.publish(msg);
+		turning = !turning;
+	}
+	
+	void FSPlugin::selectedId() {
+		gestion_parabole::SetId msg;
+		msg.request.id = ui_.pbId->value();
+		cmg_msgs::State s;
+		s.state = STATE_READY;
+		state_callback(s);
+		if (!setid_client.call(msg)) {
+			ROS_WARN("Could not set parabola id");
+		}
 	}
 
 	void FSPlugin::incrProgress() {
