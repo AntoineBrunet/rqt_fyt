@@ -11,7 +11,7 @@
 #include "cmg_msgs/Signal.h"
 #include "cmg_msgs/Guidage.h"
 #include "cmg_msgs/AGConfig.h"
-#include "dynamixel_workbench_msgs/DynamixelStateList.h"
+#include "cmg_msgs/DynamixelStateList.h"
 
 namespace rqt_fyt
 {
