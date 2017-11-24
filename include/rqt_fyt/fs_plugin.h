@@ -52,7 +52,7 @@ namespace rqt_fyt
 			void agcfg_callback(const cmg_msgs::AGConfig::ConstPtr & msg);
 			void guidg_callback(const cmg_msgs::Guidage::ConstPtr & msg);
 			void fwcmd_callback(const cmg_msgs::SpeedList::ConstPtr & msg);
-			void gimst_callback(const dynamixel_workbench_msgs::DynamixelStateList::ConstPtr &msg);
+			void gimst_callback(const cmg_msgs::DynamixelStateList::ConstPtr &msg);
 			template <typename T> void set_agstates(const T& states);
 
 		private	Q_SLOTS:

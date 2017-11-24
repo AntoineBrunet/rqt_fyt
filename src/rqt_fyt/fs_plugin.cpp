@@ -234,14 +234,14 @@ namespace rqt_fyt
 			.arg(msg->speeds[5].speed);
 		emit logStatus(info);
 	}
-	void FSPlugin::gimst_callback(const dynamixel_workbench_msgs::DynamixelStateList::ConstPtr &msg){
+	void FSPlugin::gimst_callback(const cmg_msgs::DynamixelStateList::ConstPtr &msg){
 		const double DEG_PER_RAD = 180./3.1415;
-		emit setGimbalAngle1(msg->dynamixel_state[0].present_position * DEG_PER_RAD);
-		emit setGimbalAngle2(msg->dynamixel_state[1].present_position * DEG_PER_RAD);
-		emit setGimbalAngle3(msg->dynamixel_state[2].present_position * DEG_PER_RAD);
-		emit setGimbalAngle4(msg->dynamixel_state[3].present_position * DEG_PER_RAD);
-		emit setGimbalAngle5(msg->dynamixel_state[4].present_position * DEG_PER_RAD);
-		emit setGimbalAngle6(msg->dynamixel_state[5].present_position * DEG_PER_RAD);
+		emit setGimbalAngle1(msg->states[0].present_position * DEG_PER_RAD);
+		emit setGimbalAngle2(msg->states[1].present_position * DEG_PER_RAD);
+		emit setGimbalAngle3(msg->states[2].present_position * DEG_PER_RAD);
+		emit setGimbalAngle4(msg->states[3].present_position * DEG_PER_RAD);
+		emit setGimbalAngle5(msg->states[4].present_position * DEG_PER_RAD);
+		emit setGimbalAngle6(msg->states[5].present_position * DEG_PER_RAD);
 	}
 
 	void FSPlugin::triggerAlarm(bool checked) {
